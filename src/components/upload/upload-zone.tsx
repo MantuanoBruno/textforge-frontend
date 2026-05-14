@@ -4,13 +4,16 @@ import { useCallback } from "react";
 
 import { useDropzone } from "react-dropzone";
 
-import { Upload, Camera } from "lucide-react";
+import { Upload, Camera, Hammer } from "lucide-react";
+
+import { ForgeSparks } from "@/components/animations/forge-sparks";
 
 type UploadZoneProps = {
   onFileSelect: (file: File) => void;
+  loading: boolean;
 };
 
-export function UploadZone({ onFileSelect }: UploadZoneProps) {
+export function UploadZone({ onFileSelect, loading }: UploadZoneProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (!acceptedFiles.length) return;
@@ -50,7 +53,13 @@ export function UploadZone({ onFileSelect }: UploadZoneProps) {
         duration-500
         p-12
         text-center
-
+      
+        ${
+          loading
+            ? "animate-[pulse_1.5s_ease-in-out_infinite] shadow-[0_0_40px_rgba(251,191,36,0.08)]"
+            : ""
+        }
+      
         ${
           isDragActive
             ? "border-amber-500 bg-amber-500/5"
@@ -58,6 +67,8 @@ export function UploadZone({ onFileSelect }: UploadZoneProps) {
         }
       `}
     >
+      <ForgeSparks active={loading} />
+
       <input {...getInputProps()} />
 
       <div
@@ -77,11 +88,20 @@ export function UploadZone({ onFileSelect }: UploadZoneProps) {
             shadow-2xl
           "
         >
-          <Upload
-            className="
-              text-zinc-400
-            "
-          />
+          {loading ? (
+            <Hammer
+              className="
+      text-amber-500
+      animate-pulse
+    "
+            />
+          ) : (
+            <Upload
+              className="
+      text-zinc-400
+    "
+            />
+          )}
         </div>
       </div>
 
@@ -106,6 +126,21 @@ export function UploadZone({ onFileSelect }: UploadZoneProps) {
       >
         TXT • PDF • DOCX • JPG • WEBP
       </p>
+
+      {loading && (
+        <p
+          className="
+      text-amber-500
+      text-sm
+      animate-pulse
+      mt-4
+      tracking-widest
+      uppercase
+    "
+        >
+          Forging analysis...
+        </p>
+      )}
 
       <div
         className="

@@ -1,6 +1,6 @@
 import { AnalysisResponse } from "@/types/analysis";
 
-const API_URL = "http://localhost:3000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export async function uploadFile(file: File): Promise<AnalysisResponse> {
   const formData = new FormData();
