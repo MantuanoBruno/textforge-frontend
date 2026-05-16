@@ -1,8 +1,8 @@
-import { AnalysisResponse } from "@/types/analysis";
+import { TextAnalysisResponse } from "@/types/analysis";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-export async function uploadFile(file: File): Promise<AnalysisResponse> {
+export async function uploadFile(file: File): Promise<TextAnalysisResponse> {
   const formData = new FormData();
 
   formData.append("file", file);

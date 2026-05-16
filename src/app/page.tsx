@@ -1,32 +1,93 @@
 "use client";
 
-import { Hero } from "@/components/layout/hero";
-
-import { BackgroundGlow } from "@/components/layout/background-glow";
-
-import { UploadZone } from "@/components/upload/upload-zone";
-
-import { ResultsView } from "@/components/results/results-view";
-
-import { useAnalysis } from "@/hooks/use-analysis";
+import { useState } from "react";
+import { Hero } from "@/components/hero/Hero";
+import { BackgroundGlow } from "@/components/hero/BackgroundGlow";
+import { UploadDropzone } from "@/components/upload/UploadDropzone";
+import { ProcessingState } from "@/components/upload/ProcessingState";
+import { ResultsView } from "@/components/results/ResultsView";
+import { uploadDocument } from "@/lib/api/analyze";
+import { AnalysisStatus, TextAnalysisResponse } from "@/types/analysis";
 
 export default function Home() {
-  const { analyze, loading, data, error } = useAnalysis();
+  const [status, setStatus] = useState<AnalysisStatus>("idle");
+
+  const [fileName, setFileName] = useState("");
+
+  const [analysisData, setAnalysisData] = useState<TextAnalysisResponse | null>(
+    null
+  );
+
+  async function handleUpload(file: File) {
+    try {
+      setFileName(file.name);
+
+      setAnalysisData(null);
+
+      /*
+       * Phase 1:
+       * Hammer impact
+       * Sparks
+       */
+      setStatus("uploading");
+
+      await new Promise((resolve) => setTimeout(resolve, 900));
+
+      /*
+       * Phase 2:
+       * OCR + NLP processing
+       */
+      setStatus("processing");
+
+      const response = await uploadDocument(file);
+
+      /*
+       * Small cinematic pause
+       */
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
+      setAnalysisData(response);
+
+      /*
+       * Final reveal
+       */
+      setStatus("completed");
+    } catch (error) {
+      console.error(error);
+
+      setStatus("error");
+    }
+  }
 
   return (
-    <main className="relative min-h-screen bg-[#0a0a0a] text-zinc-100 overflow-x-hidden">
+    <main className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white ">
       <BackgroundGlow />
 
-      <div className="relative max-w-6xl mx-auto px-6 py-20">
+      <div className="relative z-10">
         <Hero />
 
-        <section className="max-w-3xl mx-auto mb-32">
-          <UploadZone onFileSelect={analyze} loading={loading} />
-        </section>
+        {(status === "idle" || status === "uploading") && (
+          <UploadDropzone
+            onUpload={handleUpload}
+            isUploading={status === "uploading"}
+          />
+        )}
 
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {status === "processing" && <ProcessingState fileName={fileName} />}
 
-        {data && <ResultsView data={data} />}
+        {status === "completed" && analysisData && (
+          <ResultsView data={analysisData} />
+        )}
+
+        {status === "error" && (
+          <div className="mt-16 text-center ">
+            <p className=" text-sm uppercase tracking-[0.3em] text-red-400 ">
+              Forge Failed
+            </p>
+
+            <p className=" mt-3 text-zinc-500 ">Failed to process document.</p>
+          </div>
+        )}
       </div>
     </main>
   );
